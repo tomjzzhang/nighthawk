@@ -113,6 +113,11 @@ public:
                           const bool provide_resource_backpressure,
                           absl::string_view latency_response_header_name,
                           std::vector<UserDefinedOutputNamePluginPair> user_defined_output_plugins);
+
+  void setHardShutdownWaitTime(std::chrono::milliseconds hard_shutdown_wait_time) {
+    hard_shutdown_wait_time_ = hard_shutdown_wait_time;
+  }
+
   void setConnectionLimit(uint32_t connection_limit) { connection_limit_ = connection_limit; }
   void setMaxPendingRequests(uint32_t max_pending_requests) {
     max_pending_requests_ = max_pending_requests;
@@ -177,6 +182,7 @@ private:
   const std::string latency_response_header_name_;
   Envoy::Event::TimerPtr drain_timer_;
   std::vector<UserDefinedOutputNamePluginPair> user_defined_output_plugins_;
+  std::chrono::milliseconds hard_shutdown_wait_time_{5s};
 };
 
 } // namespace Client

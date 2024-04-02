@@ -1,6 +1,6 @@
 # Nighthawk
 
-*A L7 (HTTP/HTTPS/HTTP2) performance characterization tool*
+_A L7 (HTTP/HTTPS/HTTP2) performance characterization tool_
 
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/envoyproxy/nighthawk/badge)](https://securityscorecards.dev/viewer/?uri=github.com/envoyproxy/nighthawk)
 
@@ -9,7 +9,7 @@
 Nighthawk currently offers:
 
 - A load testing client which supports HTTP/1.1 and HTTP/2 over HTTP and HTTPS.
-(HTTPS certificates are not yet validated).
+  (HTTPS certificates are not yet validated).
 - A simple [test server](source/server/README.md) which is capable of generating dynamic response sizes, as well as inject delays.
 - A binary to transform nighthawk output to well-known formats, allowing integration with other systems and dashboards.
 
@@ -48,6 +48,7 @@ include commands that are documented in the prerequisites section above.
 #### Install required packages
 
 Run the following command to install the required packages.
+
 ```
 sudo apt-get install \
    autoconf \
@@ -68,6 +69,7 @@ sudo apt-get install \
 Note that depending on the chosen Ubuntu version, you may need to manually
 install a never version of Clang/LLVM. The installed version of Clang can be
 verified by running:
+
 ```
 clang -v
 ```
@@ -78,6 +80,7 @@ Clang/LLVM. See [issue#832](https://github.com/envoyproxy/nighthawk/issues/832)
 for one possible approach.
 
 Run the following commands to install Clang/LLVM.
+
 ```
 sudo apt install -y lld clang llvm lld lldb
 sudo apt install -y clang-{format,tidy,tools} clang-doc clang-examples
@@ -90,11 +93,13 @@ automatically chooses and downloads the appropriate Bazel version. If you
 already have Bazel installed, it is strongly recommended to remove it.
 
 Run the following to remove bazel.
+
 ```
 sudo apt-get remove bazel
 ```
 
 Run the following to install Bazelisk.
+
 ```
 sudo wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-$([ $(uname -m) = "aarch64" ] && echo "arm64" || echo "amd64")
 sudo chmod +x /usr/local/bin/bazel
@@ -104,6 +109,7 @@ sudo chmod +x /usr/local/bin/bazel
 
 Run the following to clone the Nighthawk repository and instruct Bazel to use
 Clang.
+
 ```
 git clone https://github.com/envoyproxy/nighthawk
 cd nighthawk/
@@ -115,6 +121,7 @@ echo "build --config=clang" >> user.bazelrc
 It is advisable to use the same version of Python as the one listed at the top of `tools/base/requirements.txt`. While other versions may also work, the chances of success are greatest if using the same one.
 
 Recommended: Use `virtualenv` to avoid conflicts between Nighthawk's Python package version requirements and other versions already on your system:
+
 ```
 python3 -m venv ~/my_nh_venv
 source ~/my_nh_venv/bin/activate
@@ -123,20 +130,23 @@ source ~/my_nh_venv/bin/activate
 Note: Avoid creating the environment under the Nighthawk project directory.
 
 Install Python packages required for Nighthawk (whether using `virtualenv` or not):
+
 ```
 pip3 install --user -r tools/base/requirements.txt
 ```
 
 If `pip3 install` fails, you will need to troubleshoot the Python environment before attempting to build and test Nighthawk.
 
-#### Build and testing  Nighthawk
+#### Build and testing Nighthawk
 
 You can now use the CI script to build Nighthawk.
+
 ```
 ci/do_ci.sh build
 ```
 
 Or to execute its tests.
+
 ```
 ci/do_ci.sh test
 ```
@@ -153,11 +163,13 @@ For using the Nighthawk test server, see [here](source/server/README.md).
 ```
 
 <!-- BEGIN USAGE -->
+
 ```
 
 USAGE:
 
-bazel-bin/nighthawk_client  [--user-defined-plugin-config <string>] ...
+bazel-bin/nighthawk_client [--hard-shutdown-wait-time <uint32_t>]
+[--user-defined-plugin-config <string>] ...
 [--latency-response-header-name <string>]
 [--stats-flush-interval-duration <duration>]
 [--stats-flush-interval <uint32_t>]
@@ -203,6 +215,11 @@ format>
 
 
 Where:
+
+--hard-shutdown-wait-time <uint32_t>
+The amount of time in milliseconds after sending all load test traffic
+that nighthawk will wait before initiating hard shutdown (i.e. destroy
+connection pool objects).
 
 --user-defined-plugin-config <string>  (accepted multiple times)
 WIP - will throw unimplemented error. Optional configurations for
@@ -448,18 +465,19 @@ benchmark a single endpoint. For multiple endpoints, set
 L7 (HTTP/HTTPS/HTTP2) performance characterization tool.
 
 ```
+
 <!-- END USAGE -->
 
 ### Nighthawk gRPC service
 
 The gRPC service can be used to start a server which is able to perform back-to-back benchmark runs upon request. The service interface definition [can be found here.](https://github.com/envoyproxy/nighthawk/blob/59a37568783272a6438b5697277d4e56aa16ebbe/api/client/service.proto)
 
-
 ```bash
 ➜ bazel-bin/nighthawk_service --help
 ```
 
 <!-- BEGIN USAGE -->
+
 ```
 
 USAGE:
@@ -496,18 +514,19 @@ Displays usage information and exits.
 L7 (HTTP/HTTPS/HTTP2) performance characterization tool.
 
 ```
+
 <!-- END USAGE -->
 
 ### Nighthawk output transformation utility
 
 Nighthawk comes with a tool to transform its json output to its other supported output formats.
 
-
 ```bash
 ➜ bazel-bin/nighthawk_output_transform --help
 ```
 
 <!-- BEGIN USAGE -->
+
 ```
 
 USAGE:
@@ -538,6 +557,7 @@ Displays usage information and exits.
 L7 (HTTP/HTTPS/HTTP2) performance characterization transformation tool.
 
 ```
+
 <!-- END USAGE -->
 
 **Example:** transform json output to fortio compatible format
@@ -652,7 +672,7 @@ fortio report --data-dir ./samples/fortio_data
 - Consider tuning the benchmarking system for low (network) latency. You can do that manually, or install [tuned](http://manpages.ubuntu.com/manpages/bionic/man8/tuned-adm.8.html) and run:
 
 | As this may change boot flags, take precautions, and familiarize yourself with the tool on systems that you don't mind breaking. For example, running this has been observed to mess up dual-boot systems! |
-| --- |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 
 ```bash
 sudo tuned-adm profile network-latency
