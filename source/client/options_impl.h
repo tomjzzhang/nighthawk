@@ -120,6 +120,10 @@ public:
     return user_defined_output_plugin_configs_;
   }
 
+  std::chrono::milliseconds hardShutdownWaitTime() const override {
+    return std::chrono::milliseconds(hard_shutdown_wait_time_);
+  }
+
 private:
   void parsePredicates(const TCLAP::MultiArg<std::string>& arg,
                        TerminationPredicateMap& predicates);
@@ -186,6 +190,7 @@ private:
   absl::optional<Envoy::SystemTime> scheduled_start_;
   absl::optional<std::string> execution_id_;
   std::vector<envoy::config::core::v3::TypedExtensionConfig> user_defined_output_plugin_configs_;
+  uint32_t hard_shutdown_wait_time_{5000};
 };
 
 } // namespace Client

@@ -209,7 +209,8 @@ TEST_F(OptionsImplTest, AlmostAll) {
       "--max-concurrent-streams 42 "
       "--experimental-h1-connection-reuse-strategy lru --label label1 --label label2 {} "
       "--simple-warmup --stats-sinks {} --stats-sinks {} --stats-flush-interval 10 "
-      "--latency-response-header-name zz --user-defined-plugin-config {}",
+      "--latency-response-header-name zz --user-defined-plugin-config {} "
+      "--hard-shutdown-wait-time 5000",
       client_name_, "{source_address:{address:\"127.0.0.1\",port_value:0}}",
       "{name:\"envoy.transport_sockets.tls\","
       "typed_config:{\"@type\":\"type.googleapis.com/"
@@ -302,6 +303,7 @@ TEST_F(OptionsImplTest, AlmostAll) {
                                                   actual_user_defined_output_config)
                   .ok());
   EXPECT_THAT(actual_user_defined_output_config, EqualsProto(expected_user_defined_output_config));
+  EXPECT_EQ(5000, options->hardShutdownWaitTime().count());
 
   // Check that our conversion to CommandLineOptionsPtr makes sense.
   CommandLineOptionsPtr cmd = options->toCommandLineOptions();
@@ -339,6 +341,8 @@ TEST_F(OptionsImplTest, AlmostAll) {
   EXPECT_EQ(cmd->failure_predicates().at("f1"), 1);
   EXPECT_EQ(cmd->failure_predicates().at("f2"), 2);
   EXPECT_TRUE(cmd->no_default_failure_predicates().value());
+  EXPECT_EQ(Envoy::Protobuf::util::TimeUtil::DurationToMilliseconds(cmd->hard_shutdown_wait_time()),
+            options->hardShutdownWaitTime().count());
 
   // Now we construct a new options from the proto we created above. This should result in an
   // OptionsImpl instance equivalent to options. We test that by converting both to yaml strings,
@@ -1201,6 +1205,14 @@ TEST_F(OptionsImplTest, ThrowsMalformedArgvExceptionForInvalidTypedExtensionConf
       TestUtility::createOptionsImpl(fmt::format("{} {} --user-defined-plugin-config {}",
                                                  client_name_, good_test_uri_, config)),
       MalformedArgvException, "UserDefinedPluginConfigs");
+}
+
+TEST_F(OptionsImplTest, HardShutdownWaitTimeRangeTest) {
+  // Durations >= 0s are accepted
+  EXPECT_NO_THROW(TestUtility::createOptionsImpl(
+      fmt::format("{} --hard-shutdown-wait-time 0 {}", client_name_, good_test_uri_)));
+  EXPECT_NO_THROW(TestUtility::createOptionsImpl(
+      fmt::format("{} --hard-shutdown-wait-time -50 {}", client_name_, good_test_uri_)));
 }
 
 } // namespace Client

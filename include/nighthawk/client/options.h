@@ -101,6 +101,7 @@ public:
   virtual absl::optional<std::string> executionId() const PURE;
   virtual const std::vector<envoy::config::core::v3::TypedExtensionConfig>&
   userDefinedOutputPluginConfigs() const PURE;
+  virtual std::chrono::milliseconds hardShutdownWaitTime() const PURE;
 
   /**
    * Converts an Options instance to an equivalent CommandLineOptions instance in terms of option

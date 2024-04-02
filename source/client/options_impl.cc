@@ -378,6 +378,14 @@ OptionsImpl::OptionsImpl(int argc, const char* const* argv) {
       "fail_data:\"false\"}}",
       false, "string", cmd);
 
+  TCLAP::ValueArg<uint32_t> hard_shutdown_wait_time(
+      "", "hard-shutdown-wait-time",
+      fmt::format("The amount of time in milliseconds after sending all load test traffic "
+                  "that nighthawk will wait before initiating hard shutdown (i.e. destroy "
+                  "connection pool objects).",
+                  hard_shutdown_wait_time_),
+      false, 0, "uint32_t", cmd);
+
   Utility::parseCommand(cmd, argc, argv);
 
   if (h2_use_multiple_connections.isSet()) {
@@ -676,7 +684,7 @@ OptionsImpl::OptionsImpl(int argc, const char* const* argv) {
       }
     }
   }
-
+  TCLAP_SET_IF_SPECIFIED(hard_shutdown_wait_time, hard_shutdown_wait_time_);
   validate();
 }
 
@@ -850,6 +858,10 @@ OptionsImpl::OptionsImpl(const nighthawk::client::CommandLineOptions& options) {
   for (const envoy::config::core::v3::TypedExtensionConfig& typed_config :
        options.user_defined_plugin_configs()) {
     user_defined_output_plugin_configs_.push_back(typed_config);
+  }
+  if (options.has_hard_shutdown_wait_time()) {
+    hard_shutdown_wait_time_ =
+        Envoy::Protobuf::util::TimeUtil::DurationToMilliseconds(options.hard_shutdown_wait_time());
   }
   validate();
 }
@@ -1063,6 +1075,8 @@ CommandLineOptionsPtr OptionsImpl::toCommandLineOptionsInternal() const {
        user_defined_output_plugin_configs_) {
     *command_line_options->add_user_defined_plugin_configs() = config;
   }
+  *command_line_options->mutable_hard_shutdown_wait_time() =
+      Envoy::Protobuf::util::TimeUtil::MillisecondsToDuration(hard_shutdown_wait_time_);
   return command_line_options;
 }
 

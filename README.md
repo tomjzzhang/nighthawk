@@ -157,7 +157,8 @@ For using the Nighthawk test server, see [here](source/server/README.md).
 
 USAGE:
 
-bazel-bin/nighthawk_client  [--user-defined-plugin-config <string>] ...
+bazel-bin/nighthawk_client [--hard-shutdown-wait-time <duration>]
+[--user-defined-plugin-config <string>] ...
 [--latency-response-header-name <string>]
 [--stats-flush-interval-duration <duration>]
 [--stats-flush-interval <uint32_t>]
@@ -203,6 +204,11 @@ format>
 
 
 Where:
+
+--hard-shutdown-wait-time <duration>
+The amount of time after sending all load test traffic
+that nighthawk will wait before initiating hard shutdown (i.e. destroy
+connection pool objects). Default to 5 seconds.
 
 --user-defined-plugin-config <string>  (accepted multiple times)
 WIP - will throw unimplemented error. Optional configurations for

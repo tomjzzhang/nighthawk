@@ -74,6 +74,7 @@ public:
   MOCK_METHOD(absl::optional<std::string>, executionId, (), (const, override));
   MOCK_METHOD(const std::vector<envoy::config::core::v3::TypedExtensionConfig>&,
               userDefinedOutputPluginConfigs, (), (const, override));
+  MOCK_METHOD(std::chrono::milliseconds, hardShutdownWaitTime, (), (const override));
 };
 
 } // namespace Client

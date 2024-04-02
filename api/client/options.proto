@@ -129,7 +129,7 @@ message Protocol {
 
 // TODO(oschaaf): Ultimately this will be a load test specification. The fact that it
 // can arrive via CLI is just a concrete detail. Change this to reflect that.
-// Next unused number is 114.
+// Next unused number is 115.
 message CommandLineOptions {
   // The target requests-per-second rate. Default: 5.
   google.protobuf.UInt32Value requests_per_second = 1
@@ -311,4 +311,10 @@ message CommandLineOptions {
   // Nighthawk will abort an execution attempt if a user_defined_plugin_config is provided but the
   // associated plugin factory is not registered through Envoy's plugin system.
   repeated envoy.config.core.v3.TypedExtensionConfig user_defined_plugin_configs = 112;
+
+  // The amount of time after sending all load test traffic that nighthawk will
+  // wait before initiating hard shutdown (i.e. destroy connection pool
+  // objects). Defaults to 5 seconds.
+  google.protobuf.Duration hard_shutdown_wait_time = 114
+      [(validate.rules).duration.gte.seconds = 0];
 }
