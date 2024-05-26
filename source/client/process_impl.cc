@@ -22,7 +22,6 @@
 #include "external/envoy/source/common/common/cleanup.h"
 #include "external/envoy/source/common/common/regex.h"
 #include "external/envoy/source/common/common/statusor.h"
-#include "external/envoy/source/common/config/stats_utility.h"
 #include "external/envoy/source/common/config/utility.h"
 #include "external/envoy/source/common/event/dispatcher_impl.h"
 #include "external/envoy/source/common/event/real_time_system.h"
@@ -33,6 +32,7 @@
 #include "external/envoy/source/common/protobuf/protobuf.h"
 #include "external/envoy/source/common/runtime/runtime_impl.h"
 #include "external/envoy/source/common/singleton/manager_impl.h"
+#include "external/envoy/source/common/stats/tag_producer_impl.h"
 #include "external/envoy/source/common/thread_local/thread_local_impl.h"
 #include "external/envoy/source/server/server.h"
 #include "external/envoy_api/envoy/config/core/v3/resolver.pb.h"
@@ -848,8 +848,15 @@ bool ProcessImpl::runInternal(OutputCollector& collector, const UriPtr& tracing_
     // Needs to happen as early as possible (before createWorkers()) in the instantiation to preempt
     // the objects that require stats.
     if (!options_.statsSinks().empty()) {
-      store_root_.setTagProducer(
-          Envoy::Config::StatsUtility::createTagProducer(bootstrap_, envoy_options_.statsTags()));
+      absl::StatusOr<Envoy::Stats::TagProducerPtr> producer_or_error =
+          Envoy::Stats::TagProducerImpl::createTagProducer(bootstrap_.stats_config(),
+                                                           envoy_options_.statsTags());
+      if (!producer_or_error.ok()) {
+        ENVOY_LOG(error, "createTagProducer failed. Received bad status: {}",
+                  producer_or_error.status());
+        return false;
+      }
+      store_root_.setTagProducer(std::move(producer_or_error.value()));
     }
 
     absl::Status workers_status = createWorkers(number_of_workers_, scheduled_start);
@@ -859,15 +866,17 @@ bool ProcessImpl::runInternal(OutputCollector& collector, const UriPtr& tracing_
     }
     tls_.registerThread(*dispatcher_, true);
     store_root_.initializeThreading(*dispatcher_, tls_);
-    absl::Status creation_status;
-    runtime_loader_ = Envoy::Runtime::LoaderPtr{new Envoy::Runtime::LoaderImpl(
+
+    absl::StatusOr<Envoy::Runtime::LoaderPtr> loader = Envoy::Runtime::LoaderImpl::create(
         *dispatcher_, tls_, {}, *local_info_, store_root_, generator_,
-        Envoy::ProtobufMessage::getStrictValidationVisitor(), *api_, creation_status)};
-    if (!creation_status.ok()) {
-      ENVOY_LOG(error, "create runtime loader failed. Received bad status: {}",
-                creation_status.message());
+        Envoy::ProtobufMessage::getStrictValidationVisitor(), *api_);
+
+    if (!loader.ok()) {
+      ENVOY_LOG(error, "create runtime loader failed. Received bad status: {}", loader.status());
       return false;
     }
+
+    runtime_loader_ = *std::move(loader);
 
     server_factory_context_ = std::make_unique<NighthawkServerFactoryContext>(
         admin_, *api_, *dispatcher_, access_log_manager_, envoy_options_, *runtime_loader_.get(),
@@ -895,6 +904,12 @@ bool ProcessImpl::runInternal(OutputCollector& collector, const UriPtr& tracing_
     }
     ENVOY_LOG(debug, "Computed configuration: {}", absl::StrCat(bootstrap_));
     cluster_manager_ = cluster_manager_factory_->clusterManagerFromProto(bootstrap_);
+    absl::Status status = cluster_manager_->initialize(bootstrap_);
+    if (!status.ok()) {
+      ENVOY_LOG(error, "cluster_manager initialize failed. Received bad status: {}",
+                status.message());
+      return false;
+    }
     maybeCreateTracingDriver(bootstrap_.tracing());
     cluster_manager_->setInitializedCb(
         [this]() -> void { init_manager_.initialize(init_watcher_); });
