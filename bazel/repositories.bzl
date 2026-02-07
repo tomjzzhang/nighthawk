@@ -1,7 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-ENVOY_COMMIT = "1a55c72be2c95a3dce0ead66350bb4729d49b20b"
-ENVOY_SHA = "7feca39dc4db0a85aa8866f6e19ba5bf1d9160a28298dcc951715db6c4d918f3"
+ENVOY_COMMIT = "bd5e2870b9eb8d92dbc022d7a37b9a421824fd09"
+ENVOY_SHA = "c7dd99d30e8477a9fe41d552e94b7c0d0e8718f4254b04b7ba68448aa5245afc"
 
 HDR_HISTOGRAM_C_VERSION = "0.11.8"  # June 18th, 2025
 HDR_HISTOGRAM_C_SHA = "bb95351a6a8b242dc9be1f28562761a84d4cf0a874ffc90a9b630770a6468e94"
@@ -48,7 +48,7 @@ cc_library(
         "-Wno-implicit-function-declaration",
         "-Wno-error",
     ],
-    deps = ["@zlib",],
+    deps = ["@zlib_ng",],
     visibility = ["//visibility:public"],
 )
   """,
