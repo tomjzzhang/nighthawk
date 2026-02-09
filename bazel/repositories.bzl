@@ -1,7 +1,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-ENVOY_COMMIT = "bd5e2870b9eb8d92dbc022d7a37b9a421824fd09"
-ENVOY_SHA = "c7dd99d30e8477a9fe41d552e94b7c0d0e8718f4254b04b7ba68448aa5245afc"
+ENVOY_COMMIT = "dbf41fab6bc349d3547bf03589607ece42508f8b"
+ENVOY_SHA = "fbaea3546e3371de8809ffdd297ba71807535c4b94efd753a5e851081d06d33f"
 
 HDR_HISTOGRAM_C_VERSION = "0.11.8"  # June 18th, 2025
 HDR_HISTOGRAM_C_SHA = "bb95351a6a8b242dc9be1f28562761a84d4cf0a874ffc90a9b630770a6468e94"
@@ -48,7 +48,7 @@ cc_library(
         "-Wno-implicit-function-declaration",
         "-Wno-error",
     ],
-    deps = ["@zlib_ng",],
+    deps = ["@zlib-ng",],
     visibility = ["//visibility:public"],
 )
   """,
@@ -62,5 +62,5 @@ cc_library(
     # // GRPC has a dependency on gtest which needs to be bound: https://github.com/grpc/grpc/commit/decc199ca8472b3e55b9779aafc0c682514b70c7 but envoy binds to googletest instead which doesn't seem to work in this case. https://github.com/envoyproxy/envoy/pull/16687/files#R507
     native.bind(
         name = "gtest",
-        actual = "@com_google_googletest//:gtest",
+        actual = "@googletest//:gtest",
     )
