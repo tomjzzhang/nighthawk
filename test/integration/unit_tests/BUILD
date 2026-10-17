@@ -32,3 +32,12 @@ py_test(
         "//test/integration:integration_test_base_lean",
     ],
 )
+
+py_test(
+    name = "test_nighthawk_envoy_updater",
+    srcs = ["test_nighthawk_envoy_updater.py"],
+    deps = [
+        "//tools:nighthawk_envoy_updater_lib",
+        requirement("pytest"),
+    ],
+)
