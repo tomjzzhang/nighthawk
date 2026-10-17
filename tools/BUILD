@@ -1,6 +1,6 @@
 load("@envoy//bazel:envoy_build_system.bzl", "envoy_package")
 load("@nh_pip3//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_binary")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 licenses(["notice"])  # Apache 2
 
@@ -39,4 +39,10 @@ py_binary(
         requirement("flake8"),
         requirement("flake8-docstrings"),
     ],
+)
+
+py_library(
+    name = "nighthawk_envoy_updater_lib",
+    srcs = ["nighthawk_envoy_updater.py"],
+    visibility = ["//visibility:public"],
 )
