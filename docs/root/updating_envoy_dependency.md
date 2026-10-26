@@ -235,7 +235,11 @@ rules_python@2.2.0, but got rules_python@2.3.3`).
 ```bash
 grep -oP '^bazel_dep\(name = "\K[^"]+' MODULE.bazel | while read -r dep; do
   nighthawk_version=$(grep -oP "^bazel_dep\(name = \"$dep\", version = \"\K[^\"]+" MODULE.bazel)
-  envoy_version=$(grep -oP "^bazel_dep\(name = \"$dep\", version = \"\K[^\"]+" "$envoy_dir/MODULE.bazel")
+  if [[ "$dep" == "envoy" ]]; then
+    envoy_version=$(grep -zoP 'module\(\s*name = "envoy",\s*version = "\K[^"]+' "$envoy_dir/MODULE.bazel" | tr -d '\0')
+  else
+    envoy_version=$(grep -oP "^bazel_dep\(name = \"$dep\", version = \"\K[^\"]+" "$envoy_dir/MODULE.bazel")
+  fi
   if [[ -n "$envoy_version" && "$nighthawk_version" != "$envoy_version" ]]; then
     echo "$dep: $nighthawk_version -> $envoy_version"
     sed -i "s|^bazel_dep(name = \"$dep\", version = \"[^\"]*\"|bazel_dep(name = \"$dep\", version = \"$envoy_version\"|" MODULE.bazel
